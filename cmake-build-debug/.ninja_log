@@ -1,0 +1,18 @@
+# ninja log v5
+12	767	6688665354387982	CMakeFiles/example.dir/libs/compress/compress.c.obj	8eb685be30e022a9
+3	793	6688665354544256	CMakeFiles/example.dir/main.c.obj	fc7a71b73905b7a7
+793	959	6688665355798921	example.exe	999c229e8d3beeee
+2	588	6688668049017261	CMakeFiles/example.dir/main.c.obj	fc7a71b73905b7a7
+589	689	6688668049933597	example.exe	999c229e8d3beeee
+2	599	6688677535664326	CMakeFiles/example.dir/libs/compress/compress.c.obj	8eb685be30e022a9
+599	710	6688677536885083	example.exe	999c229e8d3beeee
+2	595	6688678732255410	CMakeFiles/example.dir/main.c.obj	fc7a71b73905b7a7
+595	695	6688678733192951	example.exe	999c229e8d3beeee
+2	604	6688681311939911	CMakeFiles/example.dir/main.c.obj	fc7a71b73905b7a7
+604	710	6688681312956385	example.exe	999c229e8d3beeee
+2	983	6688688876522568	CMakeFiles/example.dir/main.c.obj	fc7a71b73905b7a7
+983	1155	6688688878265511	example.exe	999c229e8d3beeee
+2	654	6688691424831186	CMakeFiles/example.dir/main.c.obj	fc7a71b73905b7a7
+655	759	6688691425925076	example.exe	999c229e8d3beeee
+2	598	6688693682134263	CMakeFiles/example.dir/libs/compress/compress.c.obj	8eb685be30e022a9
+598	702	6688693683228281	example.exe	999c229e8d3beeee

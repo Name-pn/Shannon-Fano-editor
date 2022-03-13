@@ -1,0 +1,4 @@
+ToolSet: w64 6.0 (local)@D:\Programs\MinGW for SFML
+Options: 
+
+Options:-DCMAKE_MAKE_PROGRAM=D:/Programs/CLion 2021.3.2/bin/ninja/win/ninja.exe
