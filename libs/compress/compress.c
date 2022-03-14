@@ -68,15 +68,26 @@ double sum_change(symbol* a, int i1, int i2) {
     return res;
 }
 
-// Разбивает массив a с i1 по i2 элементы
-void alg_step(symbol* a, int i1, int i2) {
-    double k = sum_change(a, i1, i2) / 2;
+// Возвращает индекс элемента начиная с которого по i2 сумма вероятностей массива a
+// приблизительно равна сумме с i1 по возвращенный индекс - 1 элементы
+int separate(symbol* a, int i1, int i2) {
+    double half = sum_change(a, i1, i2) / 2;
     double sum = a[i1].p;
-    int m = i1 + 1; //
-    while (m < i2 && sum < k) {
+    int m = i1 + 1;
+    double old = 0;
+
+    // Конец цикла обнаружения прохождения точки минимума
+    // fabs - это abs для double
+    while (m < i2 && fabs(old - half) > fabs(sum - half)) {
         sum += a[m].p;
+        old += a[m-1].p;
         ++m;
     }
+}
+
+// Разбивает массив a с i1 по i2 элементы
+void alg_step(symbol* a, int i1, int i2) {
+    int m = separate(a, i1, i2);
     for (int i = i1; i < m; ++i) {
         set_bite((unsigned char*)a[i].code, a[i].n, 0);
         ++a[i].n;
