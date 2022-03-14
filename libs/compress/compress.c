@@ -1,6 +1,6 @@
 #include "compress.h"
 
-// Записывает в a число вхождений i-го символа ASCII в string
+// Р—Р°РїРёСЃС‹РІР°РµС‚ РІ a С‡РёСЃР»Рѕ РІС…РѕР¶РґРµРЅРёР№ i-РіРѕ СЃРёРјРІРѕР»Р° ASCII РІ string
 void entry_arr(int *a, unsigned char* string, int n) {
     for (int i = 0; i < ASCII_SIZE; ++i) {
         a[i] = 0;
@@ -10,7 +10,7 @@ void entry_arr(int *a, unsigned char* string, int n) {
     }
 }
 
-// Возвращает мощность алфавита по массиву вхождений a
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РјРѕС‰РЅРѕСЃС‚СЊ Р°Р»С„Р°РІРёС‚Р° РїРѕ РјР°СЃСЃРёРІСѓ РІС…РѕР¶РґРµРЅРёР№ a
 int alphabet(int const* a) {
     int r = 0;
     for (int i = 0; i < ASCII_SIZE; ++i) {
@@ -20,18 +20,18 @@ int alphabet(int const* a) {
     return r;
 }
 
-// Устанавливает вероятности символов string в a
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РІРµСЂРѕСЏС‚РЅРѕСЃС‚Рё СЃРёРјРІРѕР»РѕРІ string РІ a
 void set_possible(symbol* a, int const* b, int n) {
     int k = 0;
     for (int i = 0; i < ASCII_SIZE; ++i) {
         if (b[i]) {
             a[k].c = i;
-            a[k++].p = ((long double)b[i]) / n;
+            a[k++].p = ((double)b[i]) / n;
         }
     }
 }
 
-// Сортирует элементы a размера n по невозрастанию выбором по их вероятностям
+// РЎРѕСЂС‚РёСЂСѓРµС‚ СЌР»РµРјРµРЅС‚С‹ a СЂР°Р·РјРµСЂР° n РїРѕ РЅРµРІРѕР·СЂР°СЃС‚Р°РЅРёСЋ РІС‹Р±РѕСЂРѕРј РїРѕ РёС… РІРµСЂРѕСЏС‚РЅРѕСЃС‚СЏРј
 void sort_possible(symbol* a, int n) {
     symbol t;
     int maxi;
@@ -47,10 +47,10 @@ void sort_possible(symbol* a, int n) {
     }
 }
 
-// Устанавливает биту bite строки code значение с
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р±РёС‚Сѓ bite СЃС‚СЂРѕРєРё code Р·РЅР°С‡РµРЅРёРµ СЃ
 void set_bite(unsigned char* code, int bite, unsigned char c) {
     int byte = bite / 8;
-    unsigned char shift = ((char)bite) % 8;
+    unsigned char shift = bite % 8;
     unsigned char l = 0xff << (shift + 1);
     unsigned char r = 0xff >> (7 - shift + 1);
     if (code[byte] & 1 << shift)
@@ -59,41 +59,30 @@ void set_bite(unsigned char* code, int bite, unsigned char c) {
         code[byte] = code[byte] | (c << shift);
 }
 
-/*// Устанавливает биту bite строки code значение с
-void set_bite(char* code, int bite, unsigned char c) {
-    int byte = bite / 8;
-    unsigned char shift = (char)bite % 8;
-    if (code[byte] & (1 << bite % 8))
-        code[byte] = (char)((code[byte]) & ~((~c) << shift));
-    else
-        code[byte] = (char)(code[byte] | (c << shift));
-}*/
-
-// Возвращает вероятность встречи символа из части алфавита a с i1 по i2 символ
-long double sum_change(symbol* a, int i1, int i2) {
-    long double res = 0;
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІРµСЂРѕСЏС‚РЅРѕСЃС‚СЊ РІСЃС‚СЂРµС‡Рё СЃРёРјРІРѕР»Р° РёР· С‡Р°СЃС‚Рё Р°Р»С„Р°РІРёС‚Р° a СЃ i1 РїРѕ i2 СЃРёРјРІРѕР»
+double sum_change(symbol* a, int i1, int i2) {
+    double res = 0;
     for (int i = i1; i <= i2; ++i) {
         res += a[i].p;
     }
     return res;
 }
 
-// Разбивает массив a с i1 по i2 элементы таким образом чтобы сумма вероятностей
-// первой части была больше k
+// Р Р°Р·Р±РёРІР°РµС‚ РјР°СЃСЃРёРІ a СЃ i1 РїРѕ i2 СЌР»РµРјРµРЅС‚С‹
 void alg_step(symbol* a, int i1, int i2) {
-    long double k = sum_change(a, i1, i2) / 2;
-    long double sum = a[i1].p;
+    double k = sum_change(a, i1, i2) / 2;
+    double sum = a[i1].p;
     int m = i1 + 1; //
     while (m < i2 && sum < k) {
         sum += a[m].p;
         ++m;
     }
     for (int i = i1; i < m; ++i) {
-        set_bite(a[i].code, a[i].n, 0);
+        set_bite((unsigned char*)a[i].code, a[i].n, 0);
         ++a[i].n;
     }
     for (int i = m; i <= i2; ++i) {
-        set_bite(a[i].code, a[i].n, 1);
+        set_bite((unsigned char*)a[i].code, a[i].n, 1);
         ++a[i].n;
     }
     if (m < i2) {
@@ -103,23 +92,19 @@ void alg_step(symbol* a, int i1, int i2) {
         alg_step(a, i1, m - 1);
 }
 
-// Получает коды для символов a, которых n
+// РџРѕР»СѓС‡Р°РµС‚ РєРѕРґС‹ РґР»СЏ СЃРёРјРІРѕР»РѕРІ a, РєРѕС‚РѕСЂС‹С… n
 void set_code(symbol* a, int alp) {
     alg_step(a, 0, alp - 1);
 }
 
-// Инициализирует поля битовых длин массива a размера alp
+// РРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ РїРѕР»СЏ Р±РёС‚РѕРІС‹С… РґР»РёРЅ РјР°СЃСЃРёРІР° a СЂР°Р·РјРµСЂР° alp
 void init_symb(symbol *a, int alp) {
     for (int i = 0; i < alp; ++i) {
         a[i].n = 0;
-        a[i].p = 0;
-        for (int j = 0; j < MAX_CODE; ++j) {
-            a[i].code[i] = 0;
-        }
     }
 }
 
-// Конструктор алфавита сжатия
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ Р°Р»С„Р°РІРёС‚Р° СЃР¶Р°С‚РёСЏ
 int init_struct_arr(symbol *a, char * s, int n) {
     int b[ASCII_SIZE];
     entry_arr(b, (unsigned char *)s, n);
@@ -132,71 +117,7 @@ int init_struct_arr(symbol *a, char * s, int n) {
     return alp;
 }
 
-// Возвращает индекс символа c в a размера alp
-int find_char(symbol* a, int alp, unsigned char c) {
-    for (int i = 0; i < alp; ++i) {
-        if (c == a[i].c)
-            return i;
-    }
-    return -1;
-}
-
-void bit_step(int* i_bytes, int* i_bites) {
-    ++*i_bites;
-    if (*i_bites >= 8) {
-        *i_bites = 0;
-        ++*i_bytes;
-    }
-}
-
-// Возвращает бит bite строки code
-unsigned char get_bite(const char* code, int bite) {
-    int byte = bite / 8;
-    char tmp = (char)(code[byte] & (1u << bite % 8));
-    return tmp != 0;
-}
-
-void insert_binary_code(unsigned char* compressive_string, symbol* from, int* i_bytes, int* i_bites) {
-    for (int j = 0; j < from->n; ++j) {
-        set_bite(compressive_string, *i_bytes*8+*i_bites, get_bite(from->code, j));
-        bit_step(i_bytes, i_bites);
-    }
-}
-
-// Возвращает число символов записанных в compressive\_string
-// сжатой string по массиву a размера alp
-int compress(unsigned char* string, int n, unsigned char* compressive_string, symbol* a, int alp, int *bytes) {
-    int i; // Указатель на символ алфавита a
-    int i_bytes = 0;
-    int i_bites = 0;
-    for (int cir_i = 0; cir_i < n; ++cir_i) {
-        i = find_char(a, alp, string[cir_i]);
-        if (i != -1)
-            insert_binary_code(compressive_string, &(a[i]), &i_bytes, &i_bites);
-        else {
-            fprintf(stderr, "Критическая ошибка, попытка записи буквы не из алфавита!\n");
-            exit(-1);
-        }
-    }
-
-    *bytes = i_bytes + 1;
-    return(n);
-}
-
-/*// Сжимает string, записывает результат в compressive_string, возвращает число, записанных байтов
-int up_compress(unsigned char* string, unsigned char* compressive_string) {
-    int alp, n, bytes;
-    n = (int)strlen((char*)string) + 1;
-    int b[ASCII_SIZE];
-    entry_arr(b, (unsigned char*)string, n);
-    alp = alphabet(b);
-    symbol symb[alp];
-    init_struct_arr(symb, (char*)string, n);
-    compress((unsigned char*)string, n, (unsigned char*)string, symb, alp, &bytes);
-    return(n);
-}*/
-
-// Выводит двоичное представление a
+// Р’С‹РІРѕРґРёС‚ РґРІРѕРёС‡РЅРѕРµ РїСЂРµРґСЃС‚Р°РІР»РµРЅРёРµ a
 void print_byte(unsigned char a) {
     unsigned char m = ~(((unsigned char)(~0u)) >> 1);
     while (m != 0) {
@@ -208,7 +129,7 @@ void print_byte(unsigned char a) {
     }
 }
 
-// Выводит двоичное представление a размера size байтов
+// Р’С‹РІРѕРґРёС‚ РґРІРѕРёС‡РЅРѕРµ РїСЂРµРґСЃС‚Р°РІР»РµРЅРёРµ a СЂР°Р·РјРµСЂР° size Р±Р°Р№С‚РѕРІ
 void print_var (void *a, size_t size) {
     unsigned char *c = (unsigned char *)a;
     for (size_t i = 0; i < size; ++i) {
@@ -219,51 +140,87 @@ void print_var (void *a, size_t size) {
     printf("\n");
 }
 
-// Выводит символы и их сжатые битовые коды
+// Р’С‹РІРѕРґРёС‚ СЃРёРјРІРѕР»С‹ Рё РёС… СЃР¶Р°С‚С‹Рµ Р±РёС‚РѕРІС‹Рµ РєРѕРґС‹
 void write_alp(symbol *a, int alp) {
     int lim;
     for (int i = 0; i < alp; ++i) {
-        lim = (a[i].n - 1) / 8;
+        lim = a[i].n / 8;
         if (a[i].c != '\n') {
-            if (a[i].c != '\0')
-                printf("Символ '%c', размер кода %i бит, код:\n", a[i].c, a[i].n);
-            else
-                printf("Символ '\\0', размер кода %i бит, код:\n", a[i].n);
+            printf("РЎРёРјРІРѕР» '%c', СЂР°Р·РјРµСЂ РєРѕРґР° %i Р±РёС‚, РєРѕРґ:\n", a[i].c, a[i].n);
         }
         else {
-            printf("Символ '\\n', размер кода %i бит, код:\n", a[i].n);
+            printf("РЎРёРјРІРѕР» '\\n', СЂР°Р·РјРµСЂ РєРѕРґР° %i Р±РёС‚, РєРѕРґ:\n", a[i].n);
         }
         print_var(a[i].code, lim + 1);
     }
 }
 
-// Изменяет указатели i_bytes и i_bites таким образом, чтобы они показывали на следующий бит
-void step_bite(int *i_bytes, int *i_bites) {
-    if (*i_bites < 7)
-        ++*i_bites;
-    else {
-        ++*i_bytes;
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРЅРґРµРєСЃ СЃРёРјРІРѕР»Р° c РІ a СЂР°Р·РјРµСЂР° alp, РёР»Рё -1 РІ СЃР»СѓС‡Р°Рµ РµРіРѕ РѕС‚СЃСѓС‚СЃС‚РІРёСЏ
+int find_char(symbol* a, int alp, unsigned char c) {
+    for (int i = 0; i < alp; ++i) {
+        if (c == a[i].c)
+            return i;
+    }
+    return -1;
+}
+
+// РџРµСЂРµРјРµС‰Р°РµС‚ РЅР° РѕРґРёРЅ Р±РёС‚ СѓРєР°Р·Р°С‚РµР»Рё i\_bytes Рё i\_bites
+void bit_step(int* i_bytes, int* i_bites) {
+    ++*i_bites;
+    if (*i_bites >= 8) {
         *i_bites = 0;
+        ++*i_bytes;
     }
 }
 
-// Определение совпадения кода code c i\_bites бита, байта i\_bytes с кодом a
-int compare(symbol *a, unsigned char const * code, int i_bytes, int i_bites) {
-    for (int i = 0; i < a->n; ++i) {
-        //(((code[i_bytes]) & (1 << ((i_bites)))) != 0)???
-        if (get_bite(a->code, i) != get_bite((char *)code, i_bytes*8+i_bites)) // i бит буквы совпадает с соответствующим битом в строке
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ Р±РёС‚ bite СЃС‚СЂРѕРєРё code
+unsigned char get_bite(const char* code, int bite) {
+    int byte = bite / 8;
+    char tmp = (char)(code[byte] & (1u << bite % 8));
+    return tmp != 0;
+}
+
+// Р—Р°РїРёСЃС‹РІР°РµС‚ Р±РёС‚РѕРІС‹Р№ РєРѕРґ from РІ compressive\_string СЃ РїРѕР·РёС†РёРё i\_bytes Рё i\_bites
+void insert_binary_code(unsigned char* compressive_string, symbol* from, int* i_bytes, int* i_bites) {
+    for (int j = 0; j < from->n; ++j) {
+        set_bite(compressive_string, *i_bytes*8+*i_bites, get_bite(from->code, j));
+        bit_step(i_bytes, i_bites);
+    }
+}
+
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ СЃРёРјРІРѕР»РѕРІ Р·Р°РїРёСЃР°РЅРЅС‹С… РІ compressive\_string
+// СЃР¶Р°С‚РѕР№ string РїРѕ РјР°СЃСЃРёРІСѓ a СЂР°Р·РјРµСЂР° alp
+int compress(unsigned char* string, int n, unsigned char* compressive_string, symbol* a, int alp, int *bytes) {
+    int i; // РЈРєР°Р·Р°С‚РµР»СЊ РЅР° СЃРёРјРІРѕР» Р°Р»С„Р°РІРёС‚Р° a
+    int i_bytes = 0;
+    int i_bites = 0;
+    for (int cir_i = 0; cir_i < n; ++cir_i) {
+        i = find_char(a, alp, string[cir_i]);
+        if (i != -1)
+            insert_binary_code(compressive_string, &(a[i]), &i_bytes, &i_bites);
+    }
+
+    *bytes = i_bytes + 1;
+    return(n);
+}
+
+// РћРїСЂРµРґРµР»РµРЅРёРµ СЃРѕРІРїР°РґРµРЅРёСЏ РєРѕРґР° code c i\_bites Р±РёС‚Р°, Р±Р°Р№С‚Р° i\_bytes СЃ РєРѕРґРѕРј a
+int compare(symbol a, unsigned char const * code, int i_bytes, int i_bites) {
+    for (int i = 0; i < a.n; ++i) {
+        // i Р±РёС‚ Р±СѓРєРІС‹ РЅРµ СЃРѕРІРїР°РґР°РµС‚ СЃ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёРј Р±РёС‚РѕРј РІ СЃС‚СЂРѕРєРµ
+        if (get_bite(a.code, i) != (((code[i_bytes]) & (1 << ((i_bites)))) != 0))
             return 0;
-        step_bite(&i_bytes, &i_bites);
+        bit_step(&i_bytes, &i_bites);
     }
     return 1;
 }
 
-// Читает символ из code с c i\_bites бита, байта i\_bytes по их коду из a размера alp
+// Р§РёС‚Р°РµС‚ СЃРёРјРІРѕР»С‹ РёР· code СЃ c i\_bites Р±РёС‚Р°, Р±Р°Р№С‚Р° i\_bytes РїРѕ РёС… РєРѕРґСѓ РёР· a СЂР°Р·РјРµСЂР° alp
 int read_char(unsigned char* code, int *i_bytes, int *i_bites, symbol* a, int alp) {
     for (int i = 0; i < alp; ++i) {
-        if (compare(a+i, code, *i_bytes, *i_bites)) {
+        if (compare(a[i], code, *i_bytes, *i_bites)) {
             for (int j = 0; j < a[i].n; ++j) {
-                step_bite(i_bytes, i_bites);
+                bit_step(i_bytes, i_bites);
             }
             return (unsigned char) a[i].c;
         }
@@ -271,24 +228,19 @@ int read_char(unsigned char* code, int *i_bytes, int *i_bites, symbol* a, int al
     return -1;
 }
 
-// Получение строки длины n из кода code в start\_string по a размера alp
+// РџРѕР»СѓС‡РµРЅРёРµ СЃС‚СЂРѕРєРё РґР»РёРЅС‹ n РёР· РєРѕРґР° code РІ start\_string РїРѕ a СЂР°Р·РјРµСЂР° alp
 int unpack(unsigned char* code, unsigned char* start_string, symbol* a, int alp) {
     int i = 0;
-    int c; // Код считанного символа или -1
+    int c; // РљРѕРґ СЃС‡РёС‚Р°РЅРЅРѕРіРѕ СЃРёРјРІРѕР»Р° РёР»Рё -1
     int i_bytes, i_bites;
     i_bytes = i_bites = 0;
 
     do {
         c = read_char(code, &i_bytes, &i_bites, a, alp);
         if (c != -1)
-            start_string[i] = c;
-        else {
-            fprintf(stderr, "Критическая ошибка распаковки, невозможно определить символ по коду\n");
-            //exit(-1);
-        }
-        ++i;
-    } while (c != COMPRESS_END_CHAR && c != -1);
+            start_string[i++] = c;
+    } while (c != COMPRESS_END_CHAR);
+    // РЈСЃР»РѕРІРёРµ РѕСЃС‚Р°РЅРѕРІРєРё РґРѕСЃС‚РёР¶РµРЅРёРµ '\0'
 
     start_string[i] = '\0';
-    return i_bytes;
 }

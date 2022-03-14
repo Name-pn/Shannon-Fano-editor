@@ -5,15 +5,15 @@
 #include <string.h>
 #include <windows.h>
 
-#define MAX_CODE 10 // Максимальное число байтов в коде сжатого символа
-#define ASCII_SIZE 256 // Размер исходного алфавита
-#define COMPRESS_END_CHAR '\0'
+#define MAX_CODE 10 // Максимальное число байтов в коде сжатого
+// символа
+#define COMPRESS_END_CHAR '\0' // Символ конца распаковки (Изменен)
+#define ASCII_SIZE 256 // Размер кодовой таблицы
 
-
-// Элемент массива
+// Элемент алфавита
 struct symbol {
     unsigned char c; //Символ
-    long double p;
+    double p;
     // Частота встречи n1 / N, n1 число cимволов в тексте, N длина строки
     int n; // Размер кода сжатого символа code в байтах
     char code[MAX_CODE];
@@ -35,16 +35,13 @@ int init_struct_arr(symbol *a, char * s, int n);
 // сжатой string по массиву a размера alp
 int compress(unsigned char* string, int n, unsigned char* compressive_string, symbol* a, int alp, int *bytes);
 
-/*// Сжимает string, записывает результат в compressive_string, возвращает число, записанных байтов
-int up_compress(unsigned char* string, unsigned char* compressive_string);*/
-
 // Выводит двоичное представление a размера size байтов
 void print_var (void *a, size_t size);
 
-// Выводит символы и их сжатые битовые коды
+// Выводит символы a размера alp и их сжатые битовые коды
 void write_alp(symbol *a, int alp);
 
 // Получение строки длины n из кода code в start\_string по a размера alp
 int unpack(unsigned char* code, unsigned char* start_string, symbol* a, int alp);
 
-#endif //INC_COMPRESS_H
+#endif //INC\_COMPRESS\_H

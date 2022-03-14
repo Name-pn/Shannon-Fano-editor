@@ -1,22 +1,24 @@
+// Р•С‰Рµ РЅР°Рј РїСЂРёРіРѕРґРёС‚СЃСЏ
 #include "libs/compress/compress.h"
-#include <string.h>
-#include <io.h>
 
+// РРјСЏ РґР»СЏ С„Р°Р№Р»Р° РєРѕРЅС„РёРіСѓСЂР°С†РёРё
 const char* CONFIG_NAME = "compress_config.txt";
-const char END_CHAR = '~';
 
+// РњР°РєСЃРёРјР°Р»СЊРЅР°СЏ РґР»РёРЅР° РёРјРµРЅРё С„Р°Р№Р»Р°
 #define NAME_MAX 255
+// РњР°РєСЃРёРјР°Р»СЊРЅРѕРµ С‡РёСЃР»Рѕ Р·Р°РїРёСЃРѕРє
 #define MAX_FILES 100
-#define FILE_MAX_SIZE 10000
-#define FILE_ROW_SIZE 255
+#define FILE_MAX_SIZE 10000 // РњР°РєСЃРёРјР°Р»СЊРЅРѕРµ С‡РёСЃР»Рѕ СЃРёРјРІРѕР»РѕРІ РІ С„Р°Р№Р»Рµ
+#define FILE_ROW_SIZE 255 // РњР°РєСЃРёРјР°Р»СЊРЅРѕРµ С‡РёСЃР»Рѕ СЃРёРјРІРѕР»РѕРІ РІ СЃС‚СЂРѕРєРµ С„.
+#define END_CHAR '~' // РљРѕРЅРµС† РІРІРѕРґР° С‚РµРєСЃС‚Р°
 
-// Структура с именами всех созданных файлов
+// РЎС‚СЂСѓРєС‚СѓСЂР° СЃ РёРјРµРЅР°РјРё РІСЃРµС… СЃРѕР·РґР°РЅРЅС‹С… С„Р°Р№Р»РѕРІ
 struct config_st {
-    char file_names[MAX_FILES][NAME_MAX]; // Имена файлов
-    int count; // Число файлов
+    char file_names[MAX_FILES][NAME_MAX]; // РРјРµРЅР° С„Р°Р№Р»РѕРІ
+    int count; // Р§РёСЃР»Рѕ С„Р°Р№Р»РѕРІ
 };
 
-// Загрузить данные fs в файл конфигурации f
+// Р—Р°РіСЂСѓР·РёС‚СЊ РґР°РЅРЅС‹Рµ fs РІ С„Р°Р№Р» РєРѕРЅС„РёРіСѓСЂР°С†РёРё f
 void read_files(struct config_st* fs, FILE* f) {
     int start = ftell(f);
 
@@ -25,7 +27,71 @@ void read_files(struct config_st* fs, FILE* f) {
     fseek(f, start, SEEK_SET);
 }
 
-// Сбросить данные fs в файл конфигурации f
+// Р’С‹РІРµСЃС‚Рё РёРјРµРЅР° СЃРѕР·РґР°РЅРЅС‹С… С„Р°Р№Р»РѕРІ РёР· fs
+void write_list(struct config_st* fs) {
+    if (!fs->count)
+        printf("Р¤Р°Р№Р»С‹ РЅРµ РѕР±РЅР°СЂСѓР¶РµРЅС‹\n");
+    for (int i = 0; i < fs->count; ++i) {
+        printf("Р¤Р°Р№Р» в„–%i: ", i + 1);
+        fputs(fs->file_names[i], stdout);
+    }
+    putc('\n', stdout);
+}
+
+// Р—Р°РїРёСЃС‹РІР°РµС‚ РІ f1 Рё f2 РёРјРµРЅР° С„Р°Р№Р»РѕРІ, РґРѕР±Р°РІР»СЏСЏ Рє s СЂР°СЃС€РёСЂРµРЅРёРµ Р±РёРЅ. С„Р°Р№Р»Р° РґР»СЏ f1,
+// Рё СЂР°СЃС€РёСЂРµРЅРёРµ СЃР»СѓР¶РµР±РЅРѕРіРѕ С„Р°Р№Р»Р° РґР»СЏ f2
+void get_files(char* s, char f1[NAME_MAX], char f2[NAME_MAX]) {
+    sscanf(s, "%s", f1);
+    sscanf(s, "%s", f2);
+
+    strcat(f1, ".bin");
+    strcat(f2, ".mem");
+}
+
+// РџРµСЂРµР·Р°РїРёСЃС‹РІР°РµС‚ С„Р°Р№Р»С‹ Р·Р°РїРёСЃРєРё РёРјРµРЅРё s
+void rewrite(char* s) {
+    printf("Р’РІРѕРґРёС‚Рµ СЃРѕРґРµСЂР¶РёРјРѕРµ С„Р°Р№Р»Р°, РѕРєРѕРЅС‡РёС‚Рµ РІРІРѕРґ С„Р°Р№Р»Р° СЃРёРјРІРѕР»РѕРј '~' РІ РЅР°С‡Р°Р»Рµ РЅРѕРІРѕР№ СЃС‚СЂРѕРєРё:\n");
+
+    char str_f[FILE_MAX_SIZE];
+    char new_str[FILE_MAX_SIZE];
+
+    str_f[0] = '\0';
+
+    //Р§С‚РµРЅРёРµ С‚РµРєСЃС‚Р° РґРѕ РєРѕРЅС†Р° РІРІРѕРґР°
+    char buf[FILE_ROW_SIZE];
+    char* error = fgets(buf, FILE_ROW_SIZE, stdin);
+    while (buf[0] != END_CHAR && error != NULL) {
+        strcat(str_f, buf);
+        error = fgets(buf, FILE_ROW_SIZE, stdin);
+    }
+
+    // РЎР¶Р°С‚РёРµ
+    int n, bytes;
+    n = (int)strlen(str_f) + 1;
+    symbol symb[ASCII_SIZE];
+    int alp = init_struct_arr(symb, str_f, n);
+
+    compress((unsigned char*)str_f, n, (unsigned char*)new_str, symb, alp, &bytes);
+
+    // Р—Р°РїРёСЃСЊ РІ С„Р°Р№Р»С‹
+    char f_name[NAME_MAX];
+    char f_name2[NAME_MAX];
+
+    get_files(s, f_name, f_name2);
+
+    FILE* new_f = fopen(f_name, "wb"); // wb - РїРµСЂРµР·Р°РїРёСЃСЊ РІ Р±РёРЅР°СЂРЅРѕРј СЂРµР¶РёРјРµ
+    // Р—Р°РїРёСЃР°С‚СЊ bytes Р±Р°Р№С‚РѕРІ new_str РІ new_f
+    fwrite(new_str, sizeof(char), bytes, new_f);
+    fclose(new_f);
+
+    new_f = fopen(f_name2, "wb");
+
+    fwrite(&alp, sizeof(int), 1, new_f);
+    fwrite(symb, sizeof(symbol), alp, new_f);
+    fclose(new_f);
+}
+
+// РЎР±СЂРѕСЃРёС‚СЊ РґР°РЅРЅС‹Рµ fs РІ С„Р°Р№Р» РєРѕРЅС„РёРіСѓСЂР°С†РёРё f
 void push_in_file(struct config_st* fs, FILE* f) {
     int start = ftell(f);
 
@@ -34,104 +100,14 @@ void push_in_file(struct config_st* fs, FILE* f) {
     fseek(f, start, SEEK_SET);
 }
 
-// Сохраняет fs в долговременной памяти
+// РЎРѕС…СЂР°РЅСЏРµС‚ fs РІ РґРѕР»РіРѕРІСЂРµРјРµРЅРЅРѕР№ РїР°РјСЏС‚Рё
 void save_config(struct config_st* fs) {
     FILE* f = fopen(CONFIG_NAME, "rb+");
     push_in_file(fs, f);
     fclose(f);
 }
 
-// Вывести имена созданных файлов из fs
-void write_list(struct config_st* fs) {
-    if (!fs->count)
-        printf("Файлы не обнаружены\n");
-    for (int i = 0; i < fs->count; ++i) {
-        printf("Файл №%i: ", i + 1);
-        fputs(fs->file_names[i], stdout);
-    }
-    putc('\n', stdout);
-}
-
-// Возвращает значение 1, если в fs есть строка file, иначе возвращает 0
-int find_file(struct config_st* fs, char* file) {
-    for (int i = 0; i < fs->count; ++i) {
-        if (!strcmp(fs->file_names[i], file))
-            return 1;
-    }
-    return 0;
-}
-
-// Записывает в f1 и f2 имена файлов, добавляя к s расширение сжатого файла для f1,
-// и расширение служебного файла для f2
-void get_files(char* s, char f1[NAME_MAX], char f2[NAME_MAX]) {
-    sscanf(s, "%s", f1);
-    sscanf(s, "%s", f2);
-    strcat(f1, ".bin");
-    strcat(f2, ".mem");
-}
-
-// Перезаписывает файлы записки имени s
-void rewrite(char* s) {
-    printf("Вводите содержимое файла, окончите ввод файла символом '~' в начале новой строки:\n");
-
-    char str_f[FILE_MAX_SIZE] = {0};
-    char new_str[FILE_MAX_SIZE] = {0};
-
-    str_f[0] = '\0';
-
-    //Чтение текста до конца ввода
-    char buf[FILE_ROW_SIZE] ;
-    char* error = fgets(buf, FILE_ROW_SIZE, stdin);
-    while (buf[0] != END_CHAR && error != NULL) {
-        strcat(str_f, buf);
-        error = fgets(buf, FILE_ROW_SIZE, stdin);
-    }
-    printf("Прочитана строка:\n");
-    puts(str_f);
-    // Сжатие
-    int alp, n, bytes;
-    n = (int)strlen(str_f) + 1;
-    symbol symb[ASCII_SIZE];
-    alp = init_struct_arr(symb, str_f, n);
-    write_alp(symb, alp);
-    compress((unsigned char*)str_f, n, (unsigned char*)new_str, symb, alp, &bytes);
-    printf("Код зашифрованной строки:\n");
-    print_var(new_str, bytes);
-
-    printf("Зашифрована строка:\n");
-    puts(new_str);
-    char res[FILE_MAX_SIZE];
-    unpack(new_str, res, symb, alp);
-    printf("Рас. строка:\n");
-    puts(res);
-    // Запись в файлы
-    char f_name[NAME_MAX];
-    char f_name2[NAME_MAX];
-
-    get_files(s, f_name, f_name2);
-
-    FILE* new_f = fopen(f_name, "w");
-    if (new_f == NULL) {
-        fprintf(stderr, "Ошибка открытия файла для записи сжатого кода\n");
-        return;
-    }
-    for (int i = 0; i < bytes; ++i) {
-        fputc(new_str[i], new_f);
-    }
-    fclose(new_f);
-
-    new_f = fopen(f_name2, "wb");
-    if (new_f == NULL) {
-        fprintf(stderr, "Ошибка открытия файла для записи алфавита\n");
-        return;
-    }
-
-    fwrite(&alp, sizeof(alp), 1, new_f);
-    fwrite(symb, sizeof(symbol), ASCII_SIZE, new_f);
-    fclose(new_f);
-}
-
-// Ищет s в fs, если находит возвращает номер индекса + 1, иначе 0
+// РС‰РµС‚ s РІ fs, РµСЃР»Рё РЅР°С…РѕРґРёС‚ РІРѕР·РІСЂР°С‰Р°РµС‚ РЅРѕРјРµСЂ РёРЅРґРµРєСЃР° + 1, РёРЅР°С‡Рµ 0
 int find_fname(struct config_st* fs, char* s) {
     for (int i = 0; i <fs->count; ++i) {
         if (!strcmp(s, fs->file_names[i]))
@@ -140,17 +116,16 @@ int find_fname(struct config_st* fs, char* s) {
     return 0;
 }
 
-// Создает новую записку, использует список записок fs и файл конфигурации f
+// РЎРѕР·РґР°РµС‚ РЅРѕРІСѓСЋ Р·Р°РїРёСЃРєСѓ, РґРѕР±Р°РІР»СЏРµС‚ РµРµ РІ СЃРїРёСЃРѕРє Р·Р°РїРёСЃРѕРє fs
 void create_new(struct config_st* fs) {
     if (fs->count + 1 < MAX_FILES) {
 
-        printf("Введите название нового файла\n");
+        printf("Р’РІРµРґРёС‚Рµ РЅР°Р·РІР°РЅРёРµ РЅРѕРІРѕРіРѕ С„Р°Р№Р»Р°\n");
         char f_name[NAME_MAX];
         fgets(f_name, NAME_MAX, stdin);
-
         int k = find_fname(fs, f_name);
         if (k) {
-            fprintf(stderr, "Вызвано создание уже существующего файла\n");
+            fprintf(stderr, "Р’С‹Р·РІР°РЅРѕ СЃРѕР·РґР°РЅРёРµ СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓСЋС‰РµРіРѕ С„Р°Р№Р»Р°\n");
             return;
         }
 
@@ -159,145 +134,116 @@ void create_new(struct config_st* fs) {
         fs->count = fs->count + 1;
         save_config(fs);
     } else
-        fprintf("stderr", "Ошибка превышения лимита числа файлов\n");
+        fprintf(stderr, "РћС€РёР±РєР° РїСЂРµРІС‹С€РµРЅРёСЏ Р»РёРјРёС‚Р° С‡РёСЃР»Р° С„Р°Р№Р»РѕРІ\n");
 }
 
-// Выводит содержимое записки s
+// Р’С‹РІРѕРґРёС‚ СЃРѕРґРµСЂР¶РёРјРѕРµ Р·Р°РїРёСЃРєРё s
 void write_file(char* s) {
     char file1[NAME_MAX] = {0};
     char file2[NAME_MAX] = {0};
 
+    // РџРѕР»СѓС‡РµРЅРёРµ РёРјРµРЅ СЃ СЂР°СЃС€РёСЂРµРЅРёСЏРјРё
     get_files(s, file1, file2);
 
-    FILE* f1 = fopen(file1, "r");
+    FILE* f1 = fopen(file1, "rb");
     FILE* f2 = fopen(file2, "rb");
-    int alp;
 
+    // Р§С‚РµРЅРёРµ СЂР°Р·РјРµСЂР° Р°Р»С„Р°РІРёС‚Р°, Р° Р·Р°С‚РµРј СЃР°РјРѕРіРѕ Р°Р»С„Р°РІРёС‚Р°
+    int alp;
     fread(&alp, sizeof(int), 1, f2);
+
     symbol symb[ASCII_SIZE];
     fread(symb, sizeof(symbol), ASCII_SIZE, f2);
 
-    write_alp(symb, alp);
-
+    // Р§С‚РµРЅРёРµ СЃР¶Р°С‚РѕР№ СЃС‚СЂРѕРєРё Рё РµРµ СЂР°СЃРїР°РєРѕРІРєР°
     char code[FILE_MAX_SIZE];
     char res[FILE_MAX_SIZE];
     int i = 0;
     char c;
     fscanf(f1, "%c", &c);
-    int kk = 0;
+
     while (!feof(f1)) {
         code[i++] = c;
         fscanf(f1, "%c", &c);
-        kk++;
     }
-    print_var(code, kk);
     code[i] = 0;
 
-    printf("Считанная зашифрованная строка:\n");
-    puts(code);
-    unpack(code, res, symb, alp);
+    unpack((unsigned char*)code, (unsigned char*)res, symb, alp);
 
-    printf("Считанная расшифрованная строка:\n");
-    puts(res);
+    // РџРѕСЃРёРјРІРѕР»СЊРЅС‹Р№ РІС‹РІРѕРґ
     int k = 0;
     while (res[k] != '\0')
         putc(res[k++], stdout);
+
+    // Р—Р°РєСЂС‹С‚РёРµ С„Р°Р№Р»РѕРІ
     fclose(f1);
     fclose(f2);
 }
 
-// Удаляет записку s из файла с перечислением записок f
-void delete_name(char* s, FILE* f) {
-    int uk_start = ftell(f);
-    rewind(f);
-    char row[FILE_ROW_SIZE];
-    row[0] = 'a';
-
-    int uk_w = 0;
-    int uk_r = 0;
-    char* error;
-    while (!feof(f) && row[0] != 0) {
-        error = fgets(row, FILE_ROW_SIZE, f);
-        if (error != NULL) {
-            uk_r = ftell(f);
-            if (strcmp(row, s)) {
-                fseek(f, SEEK_SET, uk_w);
-                fputs(row, f);
-                uk_w = ftell(f);
-                fseek(f, SEEK_SET, uk_r);
-            }
-        }
-    }
-    if (chsize(fileno(f), uk_w) == -1)
-        fprintf(stderr, "Ошибка удаления имени файла из архива\n");
-    fflush(f);
-}
-
-// Удаляет записку под номером num в fs из f и удаляет связанные с ней файлы
+// РЈРґР°Р»СЏРµС‚ Р·Р°РїРёСЃРєСѓ РїРѕРґ РЅРѕРјРµСЂРѕРј num РІ fs
 void delete_from_config(struct config_st* fs, int num) {
-    //Удаление физических файлов
+    //РЈРґР°Р»РµРЅРёРµ С„РёР·РёС‡РµСЃРєРёС… С„Р°Р№Р»РѕРІ
     char f1[NAME_MAX], f2[NAME_MAX];
     get_files(fs->file_names[num], f1, f2);
 
     int error;
-    error = remove(f1);
+    error = remove(f1); // remove РІ СЃР»СѓС‡Р°Рµ РѕС€РёР±РєРё РІРѕР·РІСЂР°С‰Р°РµС‚ РЅРµ РЅРѕР»СЊ
     if (error)
-        fprintf(stderr, "Ошибка удаления файла\n");
+        fprintf(stderr, "РћС€РёР±РєР° СѓРґР°Р»РµРЅРёСЏ С„Р°Р№Р»Р°\n");
 
     error = remove(f2);
     if (error)
-        fprintf(stderr, "Ошибка удаления файла\n");
+        fprintf(stderr, "РћС€РёР±РєР° СѓРґР°Р»РµРЅРёСЏ С„Р°Р№Р»Р°\n");
 
-    //Удаление из переменной копированием
+    //РЈРґР°Р»РµРЅРёРµ РёР· РїРµСЂРµРјРµРЅРЅРѕР№ РєРѕРїРёСЂРѕРІР°РЅРёРµРј
     strcpy(fs->file_names[num], fs->file_names[fs->count - 1]);
-    fs->file_names[fs->count-1][0] = '\0'; // Подтираем строку
+    fs->file_names[fs->count-1][0] = '\0'; // РџРѕРґС‚РёСЂР°РµРј СЃС‚СЂРѕРєСѓ
 
     --fs->count;
-
-    save_config(fs);
 }
 
-// Правильные ввод, пока пользователь не введет число меньшее или равное lim
-// и большее нуля запрашивает у него число
+
+// РџСЂР°РІРёР»СЊРЅС‹Рµ РІРІРѕРґ, РїРѕРєР° РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ РЅРµ РІРІРµРґРµС‚ С‡РёСЃР»Рѕ РјРµРЅСЊС€РµРµ РёР»Рё СЂР°РІРЅРѕРµ lim
+// Рё Р±РѕР»СЊС€РµРµ РЅСѓР»СЏ Р·Р°РїСЂР°С€РёРІР°РµС‚ Сѓ РЅРµРіРѕ С‡РёСЃР»Рѕ
 int right_input(int lim) {
     int x;
     scanf("%i", &x);
     while (x > lim || x <= 0) {
-        fprintf(stderr, "Некорректное число\n");
+        fprintf(stderr, "РќРµРєРѕСЂСЂРµРєС‚РЅРѕРµ С‡РёСЃР»Рѕ\n");
         scanf("%i", &x);
     }
     return x - 1;
 }
 
+//РЈРїСЂР°РІР»РµРЅРёРµ Р±СѓРґРµС‚ РѕСЃСѓС‰РµСЃС‚РІР»СЏС‚СЃСЏ С‡РµСЂРµР· РєРѕРґС‹:
 enum codes {final = 0, write_files, write_it, create, rewrite_it, delete_it};
 
-// Обеспечивает интерфейс для управления пользователя. fs список созданных заметок,
-//f файл со списком заметок.
+// РћР±РµСЃРїРµС‡РёРІР°РµС‚ РёРЅС‚РµСЂС„РµР№СЃ РґР»СЏ СѓРїСЂР°РІР»РµРЅРёСЏ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ. fs СЃРїРёСЃРѕРє СЃРѕР·РґР°РЅРЅС‹С… Р·Р°РјРµС‚РѕРє.
 void menu(struct config_st* fs) {
     int flag = 1;
     int error;
     int num;
     while (flag) {
-
-        printf("Команды:\n"
-               "Для просмотра списка файлов нажмите 1.\n"
-               "Для вывода содержимого файла нажмите 2\n"
-               "Для создания нового файла нажмите 3.\n"
-               "Для перезаписи нажмите 4.\n"
-               "Для удаления файла нажмите 5\n"
-               "Для выхода нажмите 0.\n");
+        printf("РљРѕРјР°РЅРґС‹:\n"
+               "Р”Р»СЏ РїСЂРѕСЃРјРѕС‚СЂР° СЃРїРёСЃРєР° С„Р°Р№Р»РѕРІ РЅР°Р¶РјРёС‚Рµ 1.\n"
+               "Р”Р»СЏ РІС‹РІРѕРґР° СЃРѕРґРµСЂР¶РёРјРѕРіРѕ С„Р°Р№Р»Р° РЅР°Р¶РјРёС‚Рµ 2\n"
+               "Р”Р»СЏ СЃРѕР·РґР°РЅРёСЏ РЅРѕРІРѕРіРѕ С„Р°Р№Р»Р° РЅР°Р¶РјРёС‚Рµ 3.\n"
+               "Р”Р»СЏ РїРµСЂРµР·Р°РїРёСЃРё РЅР°Р¶РјРёС‚Рµ 4.\n"
+               "Р”Р»СЏ СѓРґР°Р»РµРЅРёСЏ С„Р°Р№Р»Р° РЅР°Р¶РјРёС‚Рµ 5\n"
+               "Р”Р»СЏ РІС‹С…РѕРґР° РЅР°Р¶РјРёС‚Рµ 0.\n");
         error = scanf("%i", &flag);
-        fflush(stdin); // Если уберешь, '\n' запишется куда-нибудь не туда
+
+        fflush(stdin); // Р”Р»СЏ СѓРґР°Р»РµРЅРёСЏ '$\backslash$n' РѕСЃС‚Р°РІС€РµРіРѕСЃСЏ РїРѕСЃР»Рµ flag
         switch(flag) {
             case write_files:
                 write_list(fs);
                 break;
             case write_it:
                 if (!fs->count) {
-                    fprintf(stderr, "Попытка чтения файлов при их отсутствии\n");
+                    fprintf(stderr, "РџРѕРїС‹С‚РєР° С‡С‚РµРЅРёСЏ С„Р°Р№Р»РѕРІ РїСЂРё РёС… РѕС‚СЃСѓС‚СЃС‚РІРёРё\n");
                 } else {
                     write_list(fs);
-                    printf("Введите номер файла для чтения\n");
+                    printf("Р’РІРµРґРёС‚Рµ РЅРѕРјРµСЂ С„Р°Р№Р»Р° РґР»СЏ С‡С‚РµРЅРёСЏ\n");
                     scanf("%i", &num);
                     write_file(fs->file_names[--num]);
                 }
@@ -307,10 +253,10 @@ void menu(struct config_st* fs) {
                 break;
             case rewrite_it:
                 if (!fs->count) {
-                    fprintf(stderr, "Попытка перезаписи файлов при их отсутствии\n");
+                    fprintf(stderr, "РџРѕРїС‹С‚РєР° РїРµСЂРµР·Р°РїРёСЃРё С„Р°Р№Р»РѕРІ РїСЂРё РёС… РѕС‚СЃСѓС‚СЃС‚РІРёРё\n");
                 } else {
                     write_list(fs);
-                    printf("Введите номер перезаписываемого файла\n");
+                    printf("Р’РІРµРґРёС‚Рµ РЅРѕРјРµСЂ РїРµСЂРµР·Р°РїРёСЃС‹РІР°РµРјРѕРіРѕ С„Р°Р№Р»Р°\n");
                     num = right_input(fs->count);
                     fflush(stdin);
                     rewrite(fs->file_names[num]);
@@ -318,10 +264,10 @@ void menu(struct config_st* fs) {
                 break;
             case delete_it:
                 if (!fs->count) {
-                    fprintf(stderr, "Попытка удаления файлов при их отсутствии\n");
+                    fprintf(stderr, "РџРѕРїС‹С‚РєР° СѓРґР°Р»РµРЅРёСЏ С„Р°Р№Р»РѕРІ РїСЂРё РёС… РѕС‚СЃСѓС‚СЃС‚РІРёРё\n");
                 } else {
                     write_list(fs);
-                    printf("Введите номер удаляемого файла\n");
+                    printf("Р’РІРµРґРёС‚Рµ РЅРѕРјРµСЂ 	СѓРґР°Р»СЏРµРјРѕРіРѕ С„Р°Р№Р»Р°\n");
                     num = right_input(fs->count);
                     delete_from_config(fs, num);
                     fflush(stdin);
@@ -333,16 +279,18 @@ void menu(struct config_st* fs) {
 int main() {
     SetConsoleOutputCP(1251);
     SetConsoleCP(1251);
-    printf("Программа редактор сжатых текстовых записок приветствует вас.\n");
-
+    printf("РџСЂРѕРіСЂР°РјРјР° СЂРµРґР°РєС‚РѕСЂ СЃР¶Р°С‚С‹С… С‚РµРєСЃС‚РѕРІС‹С… Р·Р°РїРёСЃРѕРє РїСЂРёРІРµС‚СЃС‚РІСѓРµС‚ РІР°СЃ.\n");
     FILE* f;
     f = fopen(CONFIG_NAME, "rb+");
     struct config_st config;
+
     if (f == NULL)
         f = fopen(CONFIG_NAME, "wb+");
     else
         read_files(&config, f);
     fclose(f);
-    menu(&config);
+
+    menu(&config); // Р Р°СЃРєСЂРѕРµС‚СЃСЏ РґР°Р»РµРµ
+
     return 0;
 }
