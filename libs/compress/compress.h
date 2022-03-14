@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <windows.h>
+#include <math.h> // Понадобится при разделении массива по вероятностям
 
 #define MAX_CODE 10 // Максимальное число байтов в коде сжатого
 // символа
